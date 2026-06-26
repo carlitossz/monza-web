@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monza Burguer — San Cristóbal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #E8380A;
+      --dark: #0D0D0D;
+      --card: #1A1A1A;
+      --card2: #242424;
+      --text: #F0EDE8;
+      --muted: #888;
+      --border: #2E2E2E;
+    }
+    body { background: var(--dark); color: var(--text); font-family: 'Barlow', sans-serif; }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,13,13,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; color: var(--red); letter-spacing: -1px; }
+    .nav-logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-link { background: none; border: none; cursor: pointer; color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.2s; }
+    .nav-link:hover, .nav-link.active { color: var(--red); }
+    .nav-order-btn { background: var(--red); border: none; cursor: pointer; color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 8px 20px; border-radius: 4px; transition: background 0.2s; }
+    .nav-order-btn:hover { background: #c42d07; }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* HERO */
+    .hero { min-height: calc(100vh - 60px); background: #0D0D0D; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3rem 1.5rem; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(232,56,10,0.13) 0%, transparent 70%); pointer-events: none; }
+    .hero-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; }
+    .hero-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(64px, 14vw, 120px); font-weight: 900; line-height: 0.9; color: var(--text); letter-spacing: -2px; margin-bottom: 0.5rem; }
+    .hero-title .red { color: var(--red); }
+    .hero-subtitle { font-size: 16px; color: var(--muted); margin-bottom: 2rem; max-width: 360px; line-height: 1.6; }
+    .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary { background: var(--red); color: #fff; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 36px; border-radius: 4px; transition: background 0.2s; }
+    .btn-primary:hover { background: #c42d07; }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 36px; border-radius: 4px; transition: border-color 0.2s, color 0.2s; }
+    .btn-ghost:hover { border-color: var(--red); color: var(--red); }
+    .hero-stats { display: flex; gap: 2rem; margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 2rem; }
+    .hero-stat { text-align: center; }
+    .hero-stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 900; color: var(--red); }
+    .hero-stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+    /* PAGE HEADER */
+    .page-header { padding: 3rem 1.5rem 1.5rem; text-align: center; }
+    .page-label { font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 0.5rem; }
+    .page-title { font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 900; color: var(--text); letter-spacing: -1px; }
+
+    /* MENU */
+    .menu-section { padding: 1rem 1.5rem 2rem; }
+    .menu-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+    .menu-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; cursor: pointer; }
+    .menu-card:hover { border-color: var(--red); transform: translateY(-2px); }
+    .menu-card-body { padding: 1rem; }
+    .menu-card-name { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .menu-card-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+    .menu-card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .menu-card-price { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 900; color: var(--red); }
+    .btn-add { background: var(--red); color: #fff; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 7px 16px; border-radius: 4px; transition: background 0.2s; }
+    .btn-add:hover { background: #c42d07; }
+
+    /* ORDER */
+    .order-page { max-width: 680px; margin: 0 auto; padding: 1.5rem; }
+    .order-step { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+    .order-step-header { padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+    .order-step-body { padding: 1rem 1.25rem; }
+    .burger-select-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+    .burger-option { border: 1px solid var(--border); border-radius: 6px; padding: 12px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    .burger-option:hover { border-color: var(--red); }
+    .burger-option.selected { border-color: var(--red); background: rgba(232,56,10,0.08); }
+    .burger-option-name { font-size: 15px; font-weight: 600; color: var(--text); }
+    .burger-option-price { font-size: 13px; color: var(--red); font-weight: 600; margin-top: 2px; }
+    .ingredients-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ing-hint { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .ing-chip { border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--text); transition: all 0.15s; background: var(--card2); }
+    .ing-chip:hover { border-color: #888; }
+    .ing-chip.removed { border-color: var(--red); background: rgba(232,56,10,0.12); color: var(--red); text-decoration: line-through; }
+    .extras-order-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .extra-chip { border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.15s; background: var(--card2); }
+    .extra-chip.selected { border-color: var(--red); background: rgba(232,56,10,0.12); color: var(--text); }
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 12px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .form-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; transition: border-color 0.2s; outline: none; }
+    .form-input:focus { border-color: var(--red); }
+    textarea.form-input { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .delivery-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+    .delivery-btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card2); color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+    .delivery-btn.active { border-color: var(--red); color: var(--red); background: rgba(232,56,10,0.08); }
+    .order-summary { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 16px; }
+    .summary-title { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .summary-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 4px 0; font-size: 14px; gap: 12px; }
+    .summary-row .s-label { color: var(--muted); flex-shrink: 0; }
+    .summary-row .s-value { color: var(--text); font-weight: 500; text-align: right; }
+    .summary-total { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
+    .summary-total .s-label { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); text-transform: uppercase; }
+    .summary-total .s-value { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 900; color: var(--red); }
+    .btn-send { width: 100%; background: var(--red); color: #fff; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; padding: 16px; border-radius: 6px; transition: background 0.2s; }
+    .btn-send:hover { background: #c42d07; }
+    .btn-send:disabled { background: #555; cursor: not-allowed; }
+
+    /* CONTACT */
+    .contact-page { max-width: 560px; margin: 0 auto; padding: 1.5rem; }
+    .contact-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 12px; }
+    .contact-item { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .contact-item:last-child { margin-bottom: 0; }
+    .contact-icon { width: 36px; height: 36px; border-radius: 6px; background: rgba(232,56,10,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+    .contact-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .contact-value { font-size: 15px; color: var(--text); font-weight: 500; margin-top: 2px; }
+    .whatsapp-btn { width: 100%; background: #25D366; color: #fff; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 14px; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: background 0.2s; }
+    .whatsapp-btn:hover { background: #1da851; }
+
+    /* EXTRAS GRID */
+    .extras-inline-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+    .extras-inline-card { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+    .extras-inline-title { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .extras-inline-item { font-size: 13px; color: var(--muted); line-height: 1.9; }
+    .extras-inline-item span { color: var(--red); font-weight: 600; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: 500; opacity: 0; transition: opacity 0.3s; z-index: 9999; white-space: nowrap; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    .toast.success { background: #0f2e1a; border-color: #25D366; color: #25D366; }
+    .toast.error { background: #2e0f0f; border-color: var(--red); color: #ff6b6b; }
+
+    /* LOADING SPINNER */
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 500px) {
+      .form-row { grid-template-columns: 1fr; }
+      .hero-stats { gap: 1.5rem; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">monza<span>.</span></div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('home', this)">Inicio</button>
+    <button class="nav-link" onclick="showPage('menu', this)">Menú</button>
+    <button class="nav-link" onclick="showPage('order', this)">Pedido</button>
+    <button class="nav-link" onclick="showPage('contact', this)">Contacto</button>
+  </div>
+  <button class="nav-order-btn" onclick="showPage('order', null)">Pedir ahora</button>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <p class="hero-eyebrow">San Cristóbal · Táchira · VE</p>
+    <h1 class="hero-title">MONZA<br><span class="red">BURGUER</span></h1>
+    <p class="hero-subtitle">¿Con que hay hambre? Pida que le resolvemos — delivery y pick-up disponible.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="showPage('order', null)">Hacer mi pedido</button>
+      <button class="btn-ghost" onclick="showPage('menu', null)">Ver el menú</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">6K+</div><div class="hero-stat-label">Seguidores</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">6–11</div><div class="hero-stat-label">PM todos los días</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">100%</div><div class="hero-stat-label">Novillo AA</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- MENU -->
+<div id="page-menu" class="page">
+  <div class="page-header">
+    <p class="page-label">Menú Monza Burguer</p>
+    <h2 class="page-title">Tú resuelve</h2>
+  </div>
+
+  <div class="menu-section">
+    <p class="menu-section-title">Clásicas</p>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="goOrder('Prime')">
+        <div class="menu-card-body">
+          <div class="menu-card-name">Prime</div>
+          <div class="menu-card-desc">150gr Carne de Novillo AA, Queso Cheddar Kraft, Bacon, Cebolla Morada, Pepinillos, Tomate, Lechuga y Salsa de la Casa</div>
+          <div class="menu-card-footer"><div class="menu-card-price">$20.000 COP</div><button class="btn-add">Pedir</button></div>
+        </div>
+      </div>
+      <div class="menu-card" onclick="goOrder('Chicane Crispy')">
+        <div class="menu-card-body">
+          <div class="menu-card-name">Chicane Crispy</div>
+          <div class="menu-card-desc">150gr Pollo Crispy, Queso Cheddar Kraft, Triple Bacon, Cebolla Caramelizada, Pepinillos, Lechuga, Maíz y Salsa Honey Monza</div>
+          <div class="menu-card-footer"><div class="menu-card-price">$20.000 COP</div><button class="btn-add">Pedir</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <p class="menu-section-title">Las Propias</p>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="goOrder('Prime Doble')">
+        <div class="menu-card-body">
+          <div class="menu-card-name">Prime Doble</div>
+          <div class="menu-card-desc">300gr Carne de Novillo AA, Queso Cheddar Kraft, Bacon, Cebolla Morada, Pepinillos, Tomate, Lechuga y Salsa de la Casa</div>
+          <div class="menu-card-footer"><div class="menu-card-price">$26.000 COP</div><button class="btn-add">Pedir</button></div>
+        </div>
+      </div>
+      <div class="menu-card" onclick="goOrder('Chicane Crispy Doble')">
+        <div class="menu-card-body">
+          <div class="menu-card-name">Chicane Crispy Doble</div>
+          <div class="menu-card-desc">300gr Pollo Crispy, Queso Cheddar Kraft, Triple Bacon, Cebolla Caramelizada, Pepinillos, Lechuga, Maíz y Salsa Honey Monza</div>
+          <div class="menu-card-footer"><div class="menu-card-price">$26.000 COP</div><button class="btn-add">Pedir</button></div>
+        </div>
+      </div>
+      <div class="menu-card" onclick="goOrder('Mixta')">
+        <div class="menu-card-body">
+          <div class="menu-card-name">Mixta</div>
+          <div class="menu-card-desc">150gr Novillo AA + 150gr Pollo Crispy, Queso Cheddar Kraft, Cebolla Morada, Bacon, Pepinillos, Tomate, Lechuga y Salsa de la Casa</div>
+          <div class="menu-card-footer"><div class="menu-card-price">$26.000 COP</div><button class="btn-add">Pedir</button></div>
+        </div>
+      </div>
+      <div class="menu-card" onclick="goOrder('Triple')">
+        <div class="menu-card-body">
+          <div class="menu-card-name">Triple</div>
+          <div class="menu-card-desc">450gr Carne Novillo AA o Pollo Crispy, Queso Cheddar Kraft, Bacon, Cebolla Morada, Pepinillos, Tomate, Lechuga y Salsa de la Casa</div>
+          <div class="menu-card-footer"><div class="menu-card-price">$32.000 COP</div><button class="btn-add">Pedir</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <p class="menu-section-title">Pa' completar</p>
+    <div class="extras-inline-grid">
+      <div class="extras-inline-card">
+        <div class="extras-inline-title">Papitas</div>
+        <div class="extras-inline-item">Pequeña 250gr — <span>$8.000</span></div>
+        <div class="extras-inline-item">Grande 500gr — <span>$15.000</span></div>
+      </div>
+      <div class="extras-inline-card">
+        <div class="extras-inline-title">Adicionales</div>
+        <div class="extras-inline-item">Proteína extra — <span>$6.000</span></div>
+        <div class="extras-inline-item">Queso Cheddar — <span>$3.000</span></div>
+        <div class="extras-inline-item">Bacon extra — <span>$3.000</span></div>
+      </div>
+      <div class="extras-inline-card">
+        <div class="extras-inline-title">Bebidas</div>
+        <div class="extras-inline-item">Refresco 350ml — <span>$3.000</span></div>
+        <div class="extras-inline-item">Refresco 1L — <span>$5.000</span></div>
+        <div class="extras-inline-item">Refresco 1.5L — <span>$6.000</span></div>
+        <div class="extras-inline-item">Té Lipton 500ml — <span>$6.000</span></div>
+        <div class="extras-inline-item">Jugo Pulp 400ml — <span>$4.000</span></div>
+        <div class="extras-inline-item">Agua Minalba 600ml — <span>$4.000</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER -->
+<div id="page-order" class="page">
+  <div class="page-header">
+    <p class="page-label">Sistema de pedidos</p>
+    <h2 class="page-title">Tu pedido</h2>
+  </div>
+  <div class="order-page">
+
+    <div class="order-step">
+      <div class="order-step-header"><div class="step-num">1</div><div class="step-title">Elige tu hamburguesa</div></div>
+      <div class="order-step-body">
+        <div class="burger-select-grid">
+          <div class="burger-option" onclick="selectBurger(this,'Prime',20000)"><div class="burger-option-name">Prime</div><div class="burger-option-price">$20.000 COP</div></div>
+          <div class="burger-option" onclick="selectBurger(this,'Chicane Crispy',20000)"><div class="burger-option-name">Chicane Crispy</div><div class="burger-option-price">$20.000 COP</div></div>
+          <div class="burger-option" onclick="selectBurger(this,'Prime Doble',26000)"><div class="burger-option-name">Prime Doble</div><div class="burger-option-price">$26.000 COP</div></div>
+          <div class="burger-option" onclick="selectBurger(this,'Chicane Crispy Doble',26000)"><div class="burger-option-name">Chicane Crispy Doble</div><div class="burger-option-price">$26.000 COP</div></div>
+          <div class="burger-option" onclick="selectBurger(this,'Mixta',26000)"><div class="burger-option-name">Mixta</div><div class="burger-option-price">$26.000 COP</div></div>
+          <div class="burger-option" onclick="selectBurger(this,'Triple',32000)"><div class="burger-option-name">Triple</div><div class="burger-option-price">$32.000 COP</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-step">
+      <div class="order-step-header"><div class="step-num">2</div><div class="step-title">Personaliza tu burger</div></div>
+      <div class="order-step-body">
+        <p class="ing-hint">Toca los ingredientes que NO quieres en tu pedido</p>
+        <div class="ingredients-grid">
+          <div class="ing-chip" onclick="toggleIng(this)">Queso Cheddar</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Bacon</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Cebolla Morada</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Cebolla Caramelizada</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Pepinillos</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Tomate</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Lechuga</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Maíz</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Salsa de la Casa</div>
+          <div class="ing-chip" onclick="toggleIng(this)">Salsa Honey Monza</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-step">
+      <div class="order-step-header"><div class="step-num">3</div><div class="step-title">Adicionales (opcional)</div></div>
+      <div class="order-step-body">
+        <div class="extras-order-grid">
+          <div class="extra-chip" onclick="toggleExtra(this,'Papas pequeñas',8000)">Papas pequeñas +$8.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Papas grandes',15000)">Papas grandes +$15.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Proteína extra',6000)">Proteína extra +$6.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Queso extra',3000)">Queso extra +$3.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Bacon extra',3000)">Bacon extra +$3.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Refresco 350ml',3000)">Refresco 350ml +$3.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Refresco 1L',5000)">Refresco 1L +$5.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Refresco 1.5L',6000)">Refresco 1.5L +$6.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Té Lipton 500ml',6000)">Té Lipton +$6.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Jugo Pulp 400ml',4000)">Jugo Pulp +$4.000</div>
+          <div class="extra-chip" onclick="toggleExtra(this,'Agua Minalba',4000)">Agua Minalba +$4.000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-step">
+      <div class="order-step-header"><div class="step-num">4</div><div class="step-title">Tus datos</div></div>
+      <div class="order-step-body">
+        <div class="delivery-toggle">
+          <button class="delivery-btn active" id="btn-delivery" onclick="setDelivery('delivery')">🛵 Delivery</button>
+          <button class="delivery-btn" id="btn-pickup" onclick="setDelivery('pickup')">🏠 Pick-up</button>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" type="text" id="inp-nombre" placeholder="Tu nombre"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" type="tel" id="inp-telefono" placeholder="0424..."></div>
+        </div>
+        <div class="form-group" id="addr-group">
+          <label class="form-label">Dirección de entrega</label>
+          <input class="form-input" type="text" id="inp-dir" placeholder="Calle, sector, referencia...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas adicionales</label>
+          <textarea class="form-input" id="inp-notas" placeholder="¿Algún detalle extra?"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-summary">
+      <div class="summary-title">Resumen del pedido</div>
+      <div class="summary-row"><span class="s-label">Hamburguesa</span><span class="s-value" id="sum-burger">—</span></div>
+      <div class="summary-row"><span class="s-label">Sin ingredientes</span><span class="s-value" id="sum-removed">Ninguno</span></div>
+      <div class="summary-row"><span class="s-label">Adicionales</span><span class="s-value" id="sum-extras">Ninguno</span></div>
+      <div class="summary-row"><span class="s-label">Modalidad</span><span class="s-value" id="sum-modalidad">Delivery</span></div>
+      <div class="summary-total"><span class="s-label">Total estimado</span><span class="s-value" id="sum-total">$0 COP</span></div>
+    </div>
+
+    <button class="btn-send" id="btn-send" onclick="sendOrder()">🍔 Enviar pedido por WhatsApp</button>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div id="page-contact" class="page">
+  <div class="page-header">
+    <p class="page-label">Monza Burguer</p>
+    <h2 class="page-title">Contáctanos</h2>
+  </div>
+  <div class="contact-page">
+    <div class="contact-card">
+      <div class="contact-item">
+        <div class="contact-icon">🕐</div>
+        <div><div class="contact-label">Horario</div><div class="contact-value">6:00 PM – 11:00 PM · Todos los días</div></div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">📍</div>
+        <div><div class="contact-label">Ubicación</div><div class="contact-value">San Cristóbal, Táchira, VE</div></div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">📱</div>
+        <div><div class="contact-label">WhatsApp</div><div class="contact-value">04247403444</div></div>
+      </div>
+      <div class="contact-item" style="margin-bottom:0">
+        <div class="contact-icon">📸</div>
+        <div><div class="contact-label">Instagram</div><div class="contact-value">@monza.sc</div></div>
+      </div>
+    </div>
+    <button class="whatsapp-btn" onclick="openWA('Hola Monza! Quiero hacer un pedido 🍔')">
+      📲 Escribir por WhatsApp
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://howkqyfdwvciqwdrshoh.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_K9T5P-PPZArsPY3oEaC5BA_m7TnnGpD';
+  const WHATSAPP_NUM = '5804247403444';
+
+  let selBurger = null, selBurgerPrice = 0;
+  let removedIngs = [], selExtras = [], extrasTotal = 0;
+  let deliveryMode = 'delivery';
+
+  function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    updateSummary();
+    window.scrollTo(0, 0);
+  }
+
+  function goOrder(name) {
+    showPage('order', null);
+    setTimeout(() => {
+      const prices = { 'Prime': 20000, 'Chicane Crispy': 20000, 'Prime Doble': 26000, 'Chicane Crispy Doble': 26000, 'Mixta': 26000, 'Triple': 32000 };
+      document.querySelectorAll('.burger-option').forEach(o => {
+        const n = o.querySelector('.burger-option-name').textContent;
+        if (n === name) { o.classList.add('selected'); selBurger = name; selBurgerPrice = prices[name] || 0; }
+        else o.classList.remove('selected');
+      });
+      updateSummary();
+    }, 50);
+  }
+
+  function selectBurger(el, name, price) {
+    document.querySelectorAll('.burger-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selBurger = name; selBurgerPrice = price;
+    updateSummary();
+  }
+
+  function toggleIng(el) {
+    el.classList.toggle('removed');
+    const name = el.textContent;
+    if (el.classList.contains('removed')) { if (!removedIngs.includes(name)) removedIngs.push(name); }
+    else removedIngs = removedIngs.filter(i => i !== name);
+    updateSummary();
+  }
+
+  function toggleExtra(el, name, price) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) { selExtras.push({ name, price }); extrasTotal += price; }
+    else { selExtras = selExtras.filter(e => e.name !== name); extrasTotal -= price; }
+    updateSummary();
+  }
+
+  function setDelivery(mode) {
+    deliveryMode = mode;
+    document.getElementById('btn-delivery').classList.toggle('active', mode === 'delivery');
+    document.getElementById('btn-pickup').classList.toggle('active', mode === 'pickup');
+    document.getElementById('addr-group').style.display = mode === 'delivery' ? 'block' : 'none';
+    updateSummary();
+  }
+
+  function updateSummary() {
+    document.getElementById('sum-burger').textContent = selBurger || '—';
+    document.getElementById('sum-removed').textContent = removedIngs.length ? 'Sin ' + removedIngs.join(', ') : 'Ninguno';
+    document.getElementById('sum-extras').textContent = selExtras.length ? selExtras.map(e => e.name).join(', ') : 'Ninguno';
+    document.getElementById('sum-modalidad').textContent = deliveryMode === 'delivery' ? '🛵 Delivery' : '🏠 Pick-up';
+    const total = selBurgerPrice + extrasTotal;
+    document.getElementById('sum-total').textContent = total > 0 ? '$' + total.toLocaleString('es-CO') + ' COP' : '$0 COP';
+  }
+
+  async function sendOrder() {
+    const nombre = document.getElementById('inp-nombre').value.trim();
+    const telefono = document.getElementById('inp-telefono').value.trim();
+    const direccion = document.getElementById('inp-dir').value.trim();
+    const notas = document.getElementById('inp-notas').value.trim();
+
+    if (!selBurger) { showToast('⚠️ Selecciona una hamburguesa', 'error'); return; }
+    if (!nombre) { showToast('⚠️ Escribe tu nombre', 'error'); return; }
+    if (!telefono) { showToast('⚠️ Escribe tu teléfono', 'error'); return; }
+    if (deliveryMode === 'delivery' && !direccion) { showToast('⚠️ Escribe tu dirección', 'error'); return; }
+
+    const btn = document.getElementById('btn-send');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Guardando pedido...';
+
+    const total = selBurgerPrice + extrasTotal;
+    const pedido = {
+      hamburguesa: selBurger,
+      sin_ingredientes: removedIngs.length ? removedIngs.join(', ') : null,
+      adicionales: selExtras.length ? selExtras.map(e => e.name).join(', ') : null,
+      modalidad: deliveryMode,
+      nombre, telefono,
+      direccion: deliveryMode === 'delivery' ? direccion : 'Pick-up',
+      notas: notas || null,
+      total
+    };
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/pedidos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(pedido)
+      });
+
+      if (!res.ok) throw new Error('Error al guardar');
+
+      showToast('✅ Pedido guardado. Abriendo WhatsApp...', 'success');
+
+      let msg = `🍔 *NUEVO PEDIDO MONZA*\n\n`;
+      msg += `*Hamburguesa:* ${selBurger}\n`;
+      if (removedIngs.length) msg += `*Sin:* ${removedIngs.join(', ')}\n`;
+      if (selExtras.length) msg += `*Adicionales:* ${selExtras.map(e => e.name).join(', ')}\n`;
+      msg += `\n*Modalidad:* ${deliveryMode === 'delivery' ? '🛵 Delivery' : '🏠 Pick-up'}\n`;
+      msg += `*Cliente:* ${nombre}\n`;
+      msg += `*Teléfono:* ${telefono}\n`;
+      if (deliveryMode === 'delivery') msg += `*Dirección:* ${direccion}\n`;
+      if (notas) msg += `*Notas:* ${notas}\n`;
+      msg += `\n*Total:* $${total.toLocaleString('es-CO')} COP`;
+
+      setTimeout(() => openWA(msg), 800);
+
+    } catch (err) {
+      showToast('⚠️ Error de conexión. Intenta de nuevo.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '🍔 Enviar pedido por WhatsApp';
+    }
+  }
+
+  function openWA(msg) {
+    window.open(`https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(msg)}`, '_blank');
+    document.getElementById('btn-send').disabled = false;
+    document.getElementById('btn-send').innerHTML = '🍔 Enviar pedido por WhatsApp';
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 3500);
+  }
+</script>
+</body>
+</html>

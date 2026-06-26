@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Monza Burguer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --red: #E8380A; --dark: #0D0D0D; --card: #1A1A1A; --card2: #242424; --text: #F0EDE8; --muted: #888; --border: #2E2E2E; }
+    body { background: var(--dark); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+    /* LOGIN */
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    .login-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; width: 100%; max-width: 380px; text-align: center; }
+    .login-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 36px; color: var(--red); margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 1px; }
+    .login-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 15px; outline: none; margin-bottom: 12px; transition: border-color 0.2s; }
+    .login-input:focus { border-color: var(--red); }
+    .login-btn { width: 100%; background: var(--red); color: #fff; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 13px; border-radius: 6px; transition: background 0.2s; }
+    .login-btn:hover { background: #c42d07; }
+    .login-error { color: #ff6b6b; font-size: 13px; margin-top: 10px; display: none; }
+
+    /* ADMIN */
+    .admin-wrap { display: none; }
+    .admin-header { background: rgba(13,13,13,0.96); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 10; }
+    .admin-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 24px; color: var(--red); }
+    .admin-logo span { color: var(--text); font-size: 14px; font-weight: 400; margin-left: 8px; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; padding: 6px 14px; border-radius: 4px; font-size: 13px; transition: all 0.2s; }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+    .admin-body { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+    .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-value { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 900; color: var(--text); }
+    .stat-value.red { color: var(--red); }
+
+    /* FILTERS */
+    .filters { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+    .filter-btn { background: var(--card2); border: 1px solid var(--border); color: var(--muted); cursor: pointer; padding: 7px 16px; border-radius: 20px; font-size: 13px; transition: all 0.15s; }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--red); color: var(--red); background: rgba(232,56,10,0.08); }
+    .refresh-btn { background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; padding: 7px 14px; border-radius: 20px; font-size: 13px; margin-left: auto; transition: all 0.15s; }
+    .refresh-btn:hover { border-color: var(--text); color: var(--text); }
+
+    /* ORDERS */
+    .orders-list { display: flex; flex-direction: column; gap: 10px; }
+    .order-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start; transition: border-color 0.2s; }
+    .order-card:hover { border-color: #3e3e3e; }
+    .order-card.pendiente { border-left: 3px solid #f0a500; }
+    .order-card.preparando { border-left: 3px solid #3b82f6; }
+    .order-card.listo { border-left: 3px solid #25D366; }
+    .order-card.entregado { border-left: 3px solid #555; }
+    .order-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .order-num { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--muted); }
+    .order-burger { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); }
+    .order-time { font-size: 12px; color: var(--muted); margin-left: auto; }
+    .order-details { font-size: 13px; color: var(--muted); line-height: 1.8; }
+    .order-details strong { color: var(--text); }
+    .order-total { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 900; color: var(--red); margin-bottom: 8px; text-align: right; }
+    .order-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; }
+    .badge-pendiente { background: rgba(240,165,0,0.12); color: #f0a500; border: 1px solid rgba(240,165,0,0.3); }
+    .badge-preparando { background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+    .badge-listo { background: rgba(37,211,102,0.12); color: #25D366; border: 1px solid rgba(37,211,102,0.3); }
+    .badge-entregado { background: rgba(100,100,100,0.12); color: #888; border: 1px solid #333; }
+    .status-select { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; font-family: 'Barlow', sans-serif; font-size: 13px; cursor: pointer; outline: none; margin-top: 8px; width: 100%; }
+    .status-select:focus { border-color: var(--red); }
+    .wa-btn { background: #25D366; color: #fff; border: none; cursor: pointer; padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; transition: background 0.2s; margin-top: 6px; width: 100%; }
+    .wa-btn:hover { background: #1da851; }
+
+    .empty-state { text-align: center; padding: 4rem; color: var(--muted); }
+    .empty-state-icon { font-size: 48px; margin-bottom: 1rem; }
+    .empty-state-text { font-size: 16px; }
+
+    .loading { text-align: center; padding: 3rem; color: var(--muted); }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) { .order-card { grid-template-columns: 1fr; } .order-total { text-align: left; } }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <div class="login-logo">monza.</div>
+    <div class="login-sub">Panel de administración</div>
+    <input class="login-input" type="password" id="login-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin-wrap" id="admin-wrap">
+  <div class="admin-header">
+    <div class="admin-logo">monza. <span>Panel de pedidos</span></div>
+    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+  </div>
+  <div class="admin-body">
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Pedidos hoy</div><div class="stat-value red" id="stat-hoy">—</div></div>
+      <div class="stat-card"><div class="stat-label">Pendientes</div><div class="stat-value" id="stat-pendientes">—</div></div>
+      <div class="stat-card"><div class="stat-label">Entregados hoy</div><div class="stat-value" id="stat-entregados">—</div></div>
+      <div class="stat-card"><div class="stat-label">Total del día</div><div class="stat-value red" id="stat-total">—</div></div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('todos', this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter('pendiente', this)">Pendientes</button>
+      <button class="filter-btn" onclick="setFilter('preparando', this)">Preparando</button>
+      <button class="filter-btn" onclick="setFilter('listo', this)">Listos</button>
+      <button class="filter-btn" onclick="setFilter('entregado', this)">Entregados</button>
+      <button class="refresh-btn" onclick="loadOrders()">↻ Actualizar</button>
+    </div>
+
+    <div class="orders-list" id="orders-list">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://howkqyfdwvciqwdrshoh.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_K9T5P-PPZArsPY3oEaC5BA_m7TnnGpD';
+  const ADMIN_PASS = 'monza2024';
+  const WHATSAPP_NUM = '5804247403444';
+
+  let allOrders = [];
+  let currentFilter = 'todos';
+
+  function doLogin() {
+    const pass = document.getElementById('login-pass').value;
+    if (pass === ADMIN_PASS) {
+      document.getElementById('login-wrap').style.display = 'none';
+      document.getElementById('admin-wrap').style.display = 'block';
+      loadOrders();
+      setInterval(loadOrders, 30000);
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+
+  function logout() {
+    document.getElementById('login-wrap').style.display = 'flex';
+    document.getElementById('admin-wrap').style.display = 'none';
+    document.getElementById('login-pass').value = '';
+  }
+
+  async function loadOrders() {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/pedidos?order=created_at.desc&limit=100`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      allOrders = await res.json();
+      updateStats();
+      renderOrders();
+    } catch (e) {
+      document.getElementById('orders-list').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Error de conexión</div></div>';
+    }
+  }
+
+  function updateStats() {
+    const today = new Date().toDateString();
+    const todayOrders = allOrders.filter(o => new Date(o.created_at).toDateString() === today);
+    const pendientes = allOrders.filter(o => o.estado === 'pendiente').length;
+    const entregados = todayOrders.filter(o => o.estado === 'entregado').length;
+    const totalCOP = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
+
+    document.getElementById('stat-hoy').textContent = todayOrders.length;
+    document.getElementById('stat-pendientes').textContent = pendientes;
+    document.getElementById('stat-entregados').textContent = entregados;
+    document.getElementById('stat-total').textContent = '$' + totalCOP.toLocaleString('es-CO');
+  }
+
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderOrders();
+  }
+
+  function renderOrders() {
+    const filtered = currentFilter === 'todos' ? allOrders : allOrders.filter(o => o.estado === currentFilter);
+    const list = document.getElementById('orders-list');
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍔</div><div class="empty-state-text">No hay pedidos en esta categoría</div></div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map((o, i) => {
+      const date = new Date(o.created_at);
+      const timeStr = date.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = date.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit' });
+      const estado = o.estado || 'pendiente';
+      return `
+        <div class="order-card ${estado}" id="card-${o.id}">
+          <div>
+            <div class="order-top">
+              <span class="order-num">#${String(allOrders.length - allOrders.indexOf(o)).padStart(3,'0')}</span>
+              <span class="order-burger">${o.hamburguesa}</span>
+              <span class="order-time">${dateStr} ${timeStr}</span>
+            </div>
+            <div class="order-details">
+              ${o.sin_ingredientes ? `<div>🚫 <strong>Sin:</strong> ${o.sin_ingredientes}</div>` : ''}
+              ${o.adicionales ? `<div>➕ <strong>Adicionales:</strong> ${o.adicionales}</div>` : ''}
+              <div>${o.modalidad === 'delivery' ? '🛵' : '🏠'} <strong>${o.modalidad === 'delivery' ? 'Delivery' : 'Pick-up'}</strong></div>
+              <div>👤 <strong>${o.nombre}</strong> — ${o.telefono}</div>
+              ${o.modalidad === 'delivery' ? `<div>📍 ${o.direccion}</div>` : ''}
+              ${o.notas ? `<div>📝 ${o.notas}</div>` : ''}
+            </div>
+          </div>
+          <div>
+            <div class="order-total">$${(o.total || 0).toLocaleString('es-CO')}</div>
+            <span class="order-badge badge-${estado}">${estado}</span>
+            <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
+              <option value="pendiente" ${estado==='pendiente'?'selected':''}>⏳ Pendiente</option>
+              <option value="preparando" ${estado==='preparando'?'selected':''}>🔥 Preparando</option>
+              <option value="listo" ${estado==='listo'?'selected':''}>✅ Listo</option>
+              <option value="entregado" ${estado==='entregado'?'selected':''}>📦 Entregado</option>
+            </select>
+            <button class="wa-btn" onclick="contactClient('${o.nombre}', '${o.telefono}', '${o.hamburguesa}')">📲 WhatsApp cliente</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function updateStatus(id, estado) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ estado })
+      });
+      const card = document.getElementById('card-' + id);
+      if (card) {
+        card.className = 'order-card ' + estado;
+        card.querySelector('.order-badge').className = 'order-badge badge-' + estado;
+        card.querySelector('.order-badge').textContent = estado;
+      }
+      const o = allOrders.find(x => x.id === id);
+      if (o) o.estado = estado;
+      updateStats();
+    } catch(e) { alert('Error al actualizar el estado'); }
+  }
+
+  function contactClient(nombre, telefono, burger) {
+    const msg = `Hola ${nombre}! 🍔 Tu pedido *${burger}* en Monza ya está listo. ¡Que lo disfrutes!`;
+    const num = telefono.replace(/\D/g,'');
+    const fullNum = num.startsWith('58') ? num : '58' + num;
+    window.open(`https://wa.me/${fullNum}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+</script>
+</body>
+</html>
