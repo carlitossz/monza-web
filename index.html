@@ -678,31 +678,26 @@ document.getElementById('btn-send').addEventListener('click', async function() {
 
     showToast('✅ Pedido guardado. Abriendo WhatsApp...', 'success');
 
-    var msg = '🍔 *NUEVO PEDIDO MONZA*
-
-';
+    // === AQUÍ ESTÁ LA MAGIA REPARADA ===
+    var msg = '🍔 *NUEVO PEDIDO MONZA*\n\n';
+    
     validItems.forEach(function(item, idx) {
-      msg += '*' + (idx+1) + '. ' + (item.qty||1) + 'x ' + item.burger + '* — $' + ((item.price||0)*(item.qty||1)).toLocaleString('es-CO') + ' COP
-';
-      if (item.removed.length) msg += '   🚫 Sin: ' + item.removed.join(', ') + '
-';
+      msg += '*' + (idx+1) + '. ' + (item.qty||1) + 'x ' + item.burger + '* — $' + ((item.price||0)*(item.qty||1)).toLocaleString('es-CO') + ' COP\n';
+      if (item.removed.length) msg += '   🚫 Sin: ' + item.removed.join(', ') + '\n';
     });
-    if (selExtras.length) msg += '
-*Adicionales:* ' + selExtras.map(function(e){return e.name;}).join(', ') + '
-';
-    msg += '
-*Modalidad:* ' + (deliveryMode === 'delivery' ? '🛵 Delivery' : '🏠 Pick-up') + '
-';
-    msg += '*Cliente:* ' + nombre + '
-';
-    msg += '*Teléfono:* ' + telefono + '
-';
-    if (deliveryMode === 'delivery') msg += '*Dirección:* ' + direccion + '
-';
-    if (notas) msg += '*Notas:* ' + notas + '
-';
-    msg += '
-*TOTAL: $' + total.toLocaleString('es-CO') + ' COP*';
+    
+    if (selExtras.length) msg += '\n*Adicionales:* ' + selExtras.map(function(e){return e.name;}).join(', ') + '\n';
+    
+    msg += '\n*Modalidad:* ' + (deliveryMode === 'delivery' ? '🛵 Delivery' : '🏠 Pick-up') + '\n';
+    msg += '*Cliente:* ' + nombre + '\n';
+    msg += '*Teléfono:* ' + telefono + '\n';
+    
+    if (deliveryMode === 'delivery') msg += '*Dirección:* ' + direccion + '\n';
+    
+    if (notas) msg += '*Notas:* ' + notas + '\n';
+    
+    msg += '\n*TOTAL: $' + total.toLocaleString('es-CO') + ' COP*';
+    // ===================================
 
     setTimeout(function() {
       window.open('https://wa.me/' + WHATSAPP_NUM + '?text=' + encodeURIComponent(msg), '_blank');
