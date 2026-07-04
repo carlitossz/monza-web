@@ -137,6 +137,18 @@
     .extras-inline-item { font-size: 13px; color: var(--muted); line-height: 1.9; }
     .extras-inline-item span { color: var(--red); font-weight: 600; }
 
+    /* ADDON QTY ROW */
+    .addon-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .addon-row:last-child { border-bottom: none; }
+    .addon-row-info { display: flex; flex-direction: column; }
+    .addon-row-name { font-size: 14px; color: var(--text); font-weight: 500; }
+    .addon-row-price { font-size: 12px; color: var(--red); font-weight: 600; margin-top: 2px; }
+    .addon-qty-ctrl { display: flex; align-items: center; gap: 10px; }
+    .addon-qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+    .addon-qty-btn:hover { border-color: var(--red); color: var(--red); }
+    .addon-qty-num { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; min-width: 20px; text-align: center; color: var(--text); }
+    .addon-qty-num.active { color: var(--red); }
+
     /* TOAST */
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: 500; opacity: 0; transition: opacity 0.3s; z-index: 9999; white-space: nowrap; pointer-events: none; }
     .toast.show { opacity: 1; }
@@ -305,18 +317,9 @@
     </button>
 
     <div class="order-step">
-      <div class="order-step-header"><div class="step-num">+</div><div class="step-title">Adicionales (opcional)</div></div>
+      <div class="order-step-header"><div class="step-num">+</div><div class="step-title">Adicionales generales (opcional)</div></div>
       <div class="order-step-body">
-        <div class="extras-order-grid">
-          <div class="extra-chip" id="xPapP">Papas pequeñas +$8.000</div>
-          <div class="extra-chip" id="xPapG">Papas grandes +$15.000</div>
-          <div class="extra-chip" id="xRef3">Refresco 350ml +$3.000</div>
-          <div class="extra-chip" id="xRef1">Refresco 1L +$5.000</div>
-          <div class="extra-chip" id="xRef15">Refresco 1.5L +$6.000</div>
-          <div class="extra-chip" id="xTe">Té Lipton +$6.000</div>
-          <div class="extra-chip" id="xJugo">Jugo Pulp +$4.000</div>
-          <div class="extra-chip" id="xAgua">Agua Minalba +$4.000</div>
-        </div>
+        <div id="general-extras-list"></div>
       </div>
     </div>
 
@@ -407,16 +410,47 @@ const BURGER_DATA = {
   'Triple':              { price: 32000, ings: ['Queso Cheddar','Bacon','Cebolla Morada','Pepinillos','Tomate','Lechuga','Salsa de la Casa'] }
 };
 
-const EXTRAS_LIST = [
-  { id:'xPapP',  name:'Papas pequeñas', price:8000 },
-  { id:'xPapG',  name:'Papas grandes',  price:15000 },
-  { id:'xRef3',  name:'Refresco 350ml', price:3000 },
-  { id:'xRef1',  name:'Refresco 1L',    price:5000 },
-  { id:'xRef15', name:'Refresco 1.5L',  price:6000 },
-  { id:'xTe',    name:'Té Lipton',      price:6000 },
-  { id:'xJugo',  name:'Jugo Pulp',      price:4000 },
-  { id:'xAgua',  name:'Agua Minalba',   price:4000 }
+var EXTRAS_LIST = [
+  { key:'papP',  name:'Papas pequeñas', price:8000,  qty:0 },
+  { key:'papG',  name:'Papas grandes',  price:15000, qty:0 },
+  { key:'ref3',  name:'Refresco 350ml', price:3000,  qty:0 },
+  { key:'ref1',  name:'Refresco 1L',    price:5000,  qty:0 },
+  { key:'ref15', name:'Refresco 1.5L',  price:6000,  qty:0 },
+  { key:'te',    name:'Té Lipton',      price:6000,  qty:0 },
+  { key:'jugo',  name:'Jugo Pulp',      price:4000,  qty:0 },
+  { key:'agua',  name:'Agua Minalba',   price:4000,  qty:0 }
 ];
+
+function buildGeneralExtras() {
+  var el = document.getElementById('general-extras-list');
+  el.innerHTML = EXTRAS_LIST.map(function(ex) {
+    return '<div class="addon-row">' +
+      '<div class="addon-row-info">' +
+        '<div class="addon-row-name">' + ex.name + '</div>' +
+        '<div class="addon-row-price">$' + ex.price.toLocaleString('es-CO') + ' c/u</div>' +
+      '</div>' +
+      '<div class="addon-qty-ctrl">' +
+        '<button class="addon-qty-btn" data-key="' + ex.key + '" data-delta="-1">−</button>' +
+        '<div class="addon-qty-num" id="gqty-' + ex.key + '">0</div>' +
+        '<button class="addon-qty-btn" data-key="' + ex.key + '" data-delta="1">+</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('.addon-qty-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var key = this.getAttribute('data-key');
+      var delta = parseInt(this.getAttribute('data-delta'));
+      var ex = EXTRAS_LIST.find(function(e) { return e.key === key; });
+      if (!ex) return;
+      ex.qty = Math.max(0, ex.qty + delta);
+      var numEl = document.getElementById('gqty-' + key);
+      numEl.textContent = ex.qty;
+      numEl.className = 'addon-qty-num' + (ex.qty > 0 ? ' active' : '');
+      updateSummary();
+    });
+  });
+}
 
 // State
 var orderItems = []; // [{id, burger, price, removed, addons}]
@@ -426,10 +460,48 @@ var deliveryMode = 'delivery';
 var itemCounter = 0;
 
 var BURGER_ADDONS = [
-  { key: 'proteina', name: 'Proteína extra', price: 6000 },
+  { key: 'proteina', name: 'Proteína extra',      price: 6000 },
   { key: 'queso',    name: 'Queso Cheddar extra', price: 3000 },
-  { key: 'bacon',    name: 'Bacon extra', price: 3000 }
+  { key: 'bacon',    name: 'Bacon extra',          price: 3000 }
 ];
+
+function buildBurgerAddons(itemId) {
+  var container = document.getElementById('addons-' + itemId);
+  container.innerHTML = BURGER_ADDONS.map(function(a) {
+    return '<div class="addon-row">' +
+      '<div class="addon-row-info">' +
+        '<div class="addon-row-name">' + a.name + '</div>' +
+        '<div class="addon-row-price">$' + a.price.toLocaleString('es-CO') + ' c/u</div>' +
+      '</div>' +
+      '<div class="addon-qty-ctrl">' +
+        '<button class="addon-qty-btn" data-item="' + itemId + '" data-key="' + a.key + '" data-delta="-1">−</button>' +
+        '<div class="addon-qty-num" id="aqty-' + itemId + '-' + a.key + '">0</div>' +
+        '<button class="addon-qty-btn" data-item="' + itemId + '" data-key="' + a.key + '" data-delta="1">+</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  container.querySelectorAll('.addon-qty-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var iId = parseInt(this.getAttribute('data-item'));
+      var key = this.getAttribute('data-key');
+      var delta = parseInt(this.getAttribute('data-delta'));
+      var it = orderItems.find(function(x) { return x.id === iId; });
+      if (!it) return;
+      var addon = it.addons.find(function(a) { return a.key === key; });
+      var addonDef = BURGER_ADDONS.find(function(a) { return a.key === key; });
+      if (!addon) {
+        addon = { key: addonDef.key, name: addonDef.name, price: addonDef.price, qty: 0 };
+        it.addons.push(addon);
+      }
+      addon.qty = Math.max(0, addon.qty + delta);
+      if (addon.qty === 0) it.addons = it.addons.filter(function(a) { return a.key !== key; });
+      var numEl = document.getElementById('aqty-' + iId + '-' + key);
+      if (numEl) { numEl.textContent = addon.qty; numEl.className = 'addon-qty-num' + (addon.qty > 0 ? ' active' : ''); }
+      updateSummary();
+    });
+  });
+}
 
 // ---- PAGES ----
 function showPage(id, btn) {
@@ -469,11 +541,7 @@ function addBurgerItem() {
            '</div>';
   }).join('');
 
-  var addonChips = BURGER_ADDONS.map(function(a) {
-    return '<div class="extra-chip" data-item="' + itemId + '" data-key="' + a.key + '" data-name="' + a.name + '" data-price="' + a.price + '">' +
-           a.name + ' +$' + a.price.toLocaleString('es-CO') +
-           '</div>';
-  }).join('');
+
 
   var block = document.createElement('div');
   block.className = 'order-step';
@@ -492,7 +560,7 @@ function addBurgerItem() {
         '<p class="ing-hint" style="margin-top:14px">Toca los ingredientes que NO quieres</p>' +
         '<div class="ingredients-grid" id="ings-' + itemId + '" style="margin-top:8px"></div>' +
         '<p class="ing-hint" style="margin-top:14px">Adicionales para esta hamburguesa</p>' +
-        '<div class="extras-order-grid" id="addons-' + itemId + '" style="margin-top:8px">' + addonChips + '</div>' +
+        '<div id="addons-' + itemId + '" style="margin-top:8px"></div>' +
       '</div>' +
     '</div>';
 
@@ -549,26 +617,9 @@ function selectBurgerForItem(itemId, name, price, block) {
     });
   });
 
-  // Reset addon chips and attach listeners
-  var addonsContainer = document.getElementById('addons-' + itemId);
-  addonsContainer.querySelectorAll('.extra-chip').forEach(function(chip) {
-    chip.classList.remove('selected');
-    chip.addEventListener('click', function() {
-      this.classList.toggle('selected');
-      var iId = parseInt(this.getAttribute('data-item'));
-      var it = orderItems.find(function(x) { return x.id === iId; });
-      if (!it) return;
-      var aName = this.getAttribute('data-name');
-      var aPrice = parseInt(this.getAttribute('data-price'));
-      var aKey = this.getAttribute('data-key');
-      if (this.classList.contains('selected')) {
-        it.addons.push({ key: aKey, name: aName, price: aPrice });
-      } else {
-        it.addons = it.addons.filter(function(a) { return a.key !== aKey; });
-      }
-      updateSummary();
-    });
-  });
+  // Build addon qty counters for this burger
+  item.addons = [];
+  buildBurgerAddons(itemId);
 
   updateSummary();
 }
@@ -599,21 +650,8 @@ btnAnother.addEventListener('mouseleave', function() {
   this.style.borderColor = 'var(--border)'; this.style.color = 'var(--muted)';
 });
 
-// Extras
-EXTRAS_LIST.forEach(function(ex) {
-  var el = document.getElementById(ex.id);
-  if (!el) return;
-  el.addEventListener('click', function() {
-    this.classList.toggle('selected');
-    if (this.classList.contains('selected')) {
-      selExtras.push(ex); extrasTotal += ex.price;
-    } else {
-      selExtras = selExtras.filter(function(e) { return e.id !== ex.id; });
-      extrasTotal -= ex.price;
-    }
-    updateSummary();
-  });
-});
+// Build general extras on load
+buildGeneralExtras();
 
 // Delivery toggle
 document.getElementById('btn-delivery').addEventListener('click', function() {
@@ -632,24 +670,23 @@ document.getElementById('btn-pickup').addEventListener('click', function() {
 // Summary
 function updateSummary() {
   var burgersTotal = orderItems.reduce(function(s, i) {
-    var addonsTotal = (i.addons || []).reduce(function(a, x) { return a + x.price; }, 0);
+    var addonsTotal = (i.addons || []).reduce(function(a, x) { return a + x.price * x.qty; }, 0);
     return s + (i.price || 0) + addonsTotal;
   }, 0);
-  var total = burgersTotal + extrasTotal;
+  var genExtrasTotal = EXTRAS_LIST.reduce(function(s, e) { return s + e.price * e.qty; }, 0);
+  var total = burgersTotal + genExtrasTotal;
   var rows = '';
   orderItems.forEach(function(item) {
     if (!item.burger) return;
-    var addonsTotal = (item.addons || []).reduce(function(a, x) { return a + x.price; }, 0);
+    var addonsTotal = (item.addons || []).reduce(function(a, x) { return a + x.price * x.qty; }, 0);
     var subtotal = (item.price || 0) + addonsTotal;
     rows += '<div class="summary-row"><span class="s-label">' + item.burger + '</span><span class="s-value">$' + subtotal.toLocaleString('es-CO') + '</span></div>';
     if (item.removed.length) rows += '<div class="summary-row"><span class="s-label" style="padding-left:8px;font-size:12px">↳ Sin: ' + item.removed.join(', ') + '</span><span class="s-value"></span></div>';
-    if (item.addons && item.addons.length) rows += '<div class="summary-row"><span class="s-label" style="padding-left:8px;font-size:12px">↳ + ' + item.addons.map(function(a){return a.name;}).join(', ') + '</span><span class="s-value"></span></div>';
+    if (item.addons && item.addons.length) rows += '<div class="summary-row"><span class="s-label" style="padding-left:8px;font-size:12px">↳ + ' + item.addons.map(function(a){ return a.qty + 'x ' + a.name; }).join(', ') + '</span><span class="s-value"></span></div>';
   });
-  if (selExtras.length) {
-    selExtras.forEach(function(e) {
-      rows += '<div class="summary-row"><span class="s-label">' + e.name + '</span><span class="s-value">$' + e.price.toLocaleString('es-CO') + '</span></div>';
-    });
-  }
+  EXTRAS_LIST.forEach(function(e) {
+    if (e.qty > 0) rows += '<div class="summary-row"><span class="s-label">' + e.qty + 'x ' + e.name + '</span><span class="s-value">$' + (e.price * e.qty).toLocaleString('es-CO') + '</span></div>';
+  });
   document.getElementById('summary-rows').innerHTML = rows || '<div style="font-size:13px;color:var(--muted)">Selecciona una hamburguesa para ver el resumen</div>';
   document.getElementById('sum-total').textContent = '$' + total.toLocaleString('es-CO') + ' COP';
 }
@@ -672,15 +709,16 @@ document.getElementById('btn-send').addEventListener('click', async function() {
   btn.innerHTML = '<span class="spinner"></span>Guardando pedido...';
 
   var burgersTotal = validItems.reduce(function(s,i) {
-    var addonsTotal = (i.addons||[]).reduce(function(a,x){return a+x.price;},0);
+    var addonsTotal = (i.addons||[]).reduce(function(a,x){return a+x.price*x.qty;},0);
     return s + (i.price||0) + addonsTotal;
   }, 0);
-  var total = burgersTotal + extrasTotal;
+  var genExtrasTotal = EXTRAS_LIST.reduce(function(s,e){return s+e.price*e.qty;},0);
+  var total = burgersTotal + genExtrasTotal;
 
   var hambDesc = validItems.map(function(i) {
     var t = i.burger;
     if (i.removed.length) t += ' (sin: ' + i.removed.join(', ') + ')';
-    if (i.addons && i.addons.length) t += ' (+ ' + i.addons.map(function(a){return a.name;}).join(', ') + ')';
+    if (i.addons && i.addons.length) t += ' (+ ' + i.addons.map(function(a){return a.qty+'x '+a.name;}).join(', ') + ')';
     return t;
   }).join(' | ');
 
@@ -696,7 +734,7 @@ document.getElementById('btn-send').addEventListener('click', async function() {
       body: JSON.stringify({
         hamburguesa: hambDesc,
         sin_ingredientes: null,
-        adicionales: selExtras.length ? selExtras.map(function(e){return e.name;}).join(', ') : null,
+        adicionales: EXTRAS_LIST.filter(function(e){return e.qty>0;}).map(function(e){return e.qty+'x '+e.name;}).join(', ') || null,
         modalidad: deliveryMode,
         nombre: nombre,
         telefono: telefono,
@@ -713,12 +751,14 @@ document.getElementById('btn-send').addEventListener('click', async function() {
     var msg = '🍔 *NUEVO PEDIDO MONZA*\n\n';
     
     validItems.forEach(function(item, idx) {
-      var addonsTotal = (item.addons||[]).reduce(function(a,x){return a+x.price;},0);
+      var addonsTotal = (item.addons||[]).reduce(function(a,x){return a+x.price*x.qty;},0);
       var subtotal = (item.price||0) + addonsTotal;
       msg += '*' + (idx+1) + '. ' + item.burger + '* — $' + subtotal.toLocaleString('es-CO') + ' COP\n';
       if (item.removed.length) msg += '   🚫 Sin: ' + item.removed.join(', ') + '\n';
-      if (item.addons && item.addons.length) msg += '   ➕ Adicionales: ' + item.addons.map(function(a){return a.name;}).join(', ') + '\n';
+      if (item.addons && item.addons.length) msg += '   ➕ Adicionales: ' + item.addons.map(function(a){return a.qty+'x '+a.name;}).join(', ') + '\n';
     });
+    var genExtras = EXTRAS_LIST.filter(function(e){return e.qty>0;});
+    if (genExtras.length) msg += '\n*Adicionales generales:* ' + genExtras.map(function(e){return e.qty+'x '+e.name;}).join(', ') + '\n';
     
     if (selExtras.length) msg += '\n*Adicionales:* ' + selExtras.map(function(e){return e.name;}).join(', ') + '\n';
     
