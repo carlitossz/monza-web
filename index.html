@@ -310,9 +310,6 @@
         <div class="extras-order-grid">
           <div class="extra-chip" id="xPapP">Papas pequeñas +$8.000</div>
           <div class="extra-chip" id="xPapG">Papas grandes +$15.000</div>
-          <div class="extra-chip" id="xProt">Proteína extra +$6.000</div>
-          <div class="extra-chip" id="xQues">Queso extra +$3.000</div>
-          <div class="extra-chip" id="xBaconE">Bacon extra +$3.000</div>
           <div class="extra-chip" id="xRef3">Refresco 350ml +$3.000</div>
           <div class="extra-chip" id="xRef1">Refresco 1L +$5.000</div>
           <div class="extra-chip" id="xRef15">Refresco 1.5L +$6.000</div>
@@ -413,9 +410,6 @@ const BURGER_DATA = {
 const EXTRAS_LIST = [
   { id:'xPapP',  name:'Papas pequeñas', price:8000 },
   { id:'xPapG',  name:'Papas grandes',  price:15000 },
-  { id:'xProt',  name:'Proteína extra', price:6000 },
-  { id:'xQues',  name:'Queso extra',    price:3000 },
-  { id:'xBaconE',name:'Bacon extra',    price:3000 },
   { id:'xRef3',  name:'Refresco 350ml', price:3000 },
   { id:'xRef1',  name:'Refresco 1L',    price:5000 },
   { id:'xRef15', name:'Refresco 1.5L',  price:6000 },
@@ -425,11 +419,17 @@ const EXTRAS_LIST = [
 ];
 
 // State
-var orderItems = []; // [{id, burger, qty, removed}]
+var orderItems = []; // [{id, burger, price, removed, addons}]
 var selExtras = [];
 var extrasTotal = 0;
 var deliveryMode = 'delivery';
 var itemCounter = 0;
+
+var BURGER_ADDONS = [
+  { key: 'proteina', name: 'Proteína extra', price: 6000 },
+  { key: 'queso',    name: 'Queso Cheddar extra', price: 3000 },
+  { key: 'bacon',    name: 'Bacon extra', price: 3000 }
+];
 
 // ---- PAGES ----
 function showPage(id, btn) {
@@ -458,7 +458,7 @@ window.addEventListener('load', function() {
 function addBurgerItem() {
   itemCounter++;
   var itemId = itemCounter;
-  var item = { id: itemId, burger: null, qty: 1, removed: [] };
+  var item = { id: itemId, burger: null, price: 0, removed: [], addons: [] };
   orderItems.push(item);
 
   var burgerOptions = Object.keys(BURGER_DATA).map(function(name) {
@@ -469,10 +469,15 @@ function addBurgerItem() {
            '</div>';
   }).join('');
 
+  var addonChips = BURGER_ADDONS.map(function(a) {
+    return '<div class="extra-chip" data-item="' + itemId + '" data-key="' + a.key + '" data-name="' + a.name + '" data-price="' + a.price + '">' +
+           a.name + ' +$' + a.price.toLocaleString('es-CO') +
+           '</div>';
+  }).join('');
+
   var block = document.createElement('div');
   block.className = 'order-step';
   block.id = 'item-block-' + itemId;
-  block.style.position = 'relative';
   block.innerHTML =
     '<div class="order-step-header" style="justify-content:space-between">' +
       '<div style="display:flex;align-items:center;gap:12px">' +
@@ -483,15 +488,11 @@ function addBurgerItem() {
     '</div>' +
     '<div class="order-step-body">' +
       '<div class="burger-select-grid" id="bsgrid-' + itemId + '">' + burgerOptions + '</div>' +
-      '<div style="margin-top:14px">' +
-        '<p class="ing-hint" style="display:none" id="inghint-' + itemId + '">Toca los ingredientes que NO quieres</p>' +
-        '<div class="ingredients-grid" id="ings-' + itemId + '"></div>' +
-      '</div>' +
-      '<div style="margin-top:14px;display:flex;align-items:center;gap:12px">' +
-        '<span style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Cantidad</span>' +
-        '<button onclick="changeQty(' + itemId + ',-1)" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>' +
-        '<span id="qty-' + itemId + '" style="font-family:Barlow Condensed,sans-serif;font-size:22px;font-weight:700;min-width:24px;text-align:center">1</span>' +
-        '<button onclick="changeQty(' + itemId + ',1)" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>' +
+      '<div id="ing-section-' + itemId + '" style="display:none">' +
+        '<p class="ing-hint" style="margin-top:14px">Toca los ingredientes que NO quieres</p>' +
+        '<div class="ingredients-grid" id="ings-' + itemId + '" style="margin-top:8px"></div>' +
+        '<p class="ing-hint" style="margin-top:14px">Adicionales para esta hamburguesa</p>' +
+        '<div class="extras-order-grid" id="addons-' + itemId + '" style="margin-top:8px">' + addonChips + '</div>' +
       '</div>' +
     '</div>';
 
@@ -516,15 +517,17 @@ function selectBurgerForItem(itemId, name, price, block) {
   item.burger = name;
   item.price = price;
   item.removed = [];
+  item.addons = [];
 
   // Highlight selected
   block.querySelectorAll('.burger-option').forEach(function(o) { o.classList.remove('selected'); });
   block.querySelector('[data-name="' + name + '"]').classList.add('selected');
 
-  // Show ingredients
+  // Show ingredients + addons section
+  document.getElementById('ing-section-' + itemId).style.display = 'block';
+
+  // Render ingredients
   var ingsContainer = document.getElementById('ings-' + itemId);
-  var hint = document.getElementById('inghint-' + itemId);
-  hint.style.display = 'block';
   var ings = BURGER_DATA[name].ings;
   ingsContainer.innerHTML = ings.map(function(ing) {
     return '<div class="ing-chip" data-ing="' + ing + '" data-item="' + itemId + '">' + ing + '</div>';
@@ -546,14 +549,27 @@ function selectBurgerForItem(itemId, name, price, block) {
     });
   });
 
-  updateSummary();
-}
+  // Reset addon chips and attach listeners
+  var addonsContainer = document.getElementById('addons-' + itemId);
+  addonsContainer.querySelectorAll('.extra-chip').forEach(function(chip) {
+    chip.classList.remove('selected');
+    chip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      var iId = parseInt(this.getAttribute('data-item'));
+      var it = orderItems.find(function(x) { return x.id === iId; });
+      if (!it) return;
+      var aName = this.getAttribute('data-name');
+      var aPrice = parseInt(this.getAttribute('data-price'));
+      var aKey = this.getAttribute('data-key');
+      if (this.classList.contains('selected')) {
+        it.addons.push({ key: aKey, name: aName, price: aPrice });
+      } else {
+        it.addons = it.addons.filter(function(a) { return a.key !== aKey; });
+      }
+      updateSummary();
+    });
+  });
 
-function changeQty(itemId, delta) {
-  var item = orderItems.find(function(x) { return x.id === itemId; });
-  if (!item) return;
-  item.qty = Math.max(1, (item.qty || 1) + delta);
-  document.getElementById('qty-' + itemId).textContent = item.qty;
   updateSummary();
 }
 
@@ -615,13 +631,19 @@ document.getElementById('btn-pickup').addEventListener('click', function() {
 
 // Summary
 function updateSummary() {
-  var burgersTotal = orderItems.reduce(function(s, i) { return s + (i.price || 0) * (i.qty || 1); }, 0);
+  var burgersTotal = orderItems.reduce(function(s, i) {
+    var addonsTotal = (i.addons || []).reduce(function(a, x) { return a + x.price; }, 0);
+    return s + (i.price || 0) + addonsTotal;
+  }, 0);
   var total = burgersTotal + extrasTotal;
   var rows = '';
   orderItems.forEach(function(item) {
     if (!item.burger) return;
-    rows += '<div class="summary-row"><span class="s-label">' + (item.qty||1) + 'x ' + item.burger + '</span><span class="s-value">$' + ((item.price||0)*(item.qty||1)).toLocaleString('es-CO') + '</span></div>';
+    var addonsTotal = (item.addons || []).reduce(function(a, x) { return a + x.price; }, 0);
+    var subtotal = (item.price || 0) + addonsTotal;
+    rows += '<div class="summary-row"><span class="s-label">' + item.burger + '</span><span class="s-value">$' + subtotal.toLocaleString('es-CO') + '</span></div>';
     if (item.removed.length) rows += '<div class="summary-row"><span class="s-label" style="padding-left:8px;font-size:12px">↳ Sin: ' + item.removed.join(', ') + '</span><span class="s-value"></span></div>';
+    if (item.addons && item.addons.length) rows += '<div class="summary-row"><span class="s-label" style="padding-left:8px;font-size:12px">↳ + ' + item.addons.map(function(a){return a.name;}).join(', ') + '</span><span class="s-value"></span></div>';
   });
   if (selExtras.length) {
     selExtras.forEach(function(e) {
@@ -649,12 +671,16 @@ document.getElementById('btn-send').addEventListener('click', async function() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Guardando pedido...';
 
-  var burgersTotal = validItems.reduce(function(s,i) { return s + (i.price||0)*(i.qty||1); }, 0);
+  var burgersTotal = validItems.reduce(function(s,i) {
+    var addonsTotal = (i.addons||[]).reduce(function(a,x){return a+x.price;},0);
+    return s + (i.price||0) + addonsTotal;
+  }, 0);
   var total = burgersTotal + extrasTotal;
 
   var hambDesc = validItems.map(function(i) {
-    var t = (i.qty||1) + 'x ' + i.burger;
+    var t = i.burger;
     if (i.removed.length) t += ' (sin: ' + i.removed.join(', ') + ')';
+    if (i.addons && i.addons.length) t += ' (+ ' + i.addons.map(function(a){return a.name;}).join(', ') + ')';
     return t;
   }).join(' | ');
 
@@ -687,8 +713,11 @@ document.getElementById('btn-send').addEventListener('click', async function() {
     var msg = '🍔 *NUEVO PEDIDO MONZA*\n\n';
     
     validItems.forEach(function(item, idx) {
-      msg += '*' + (idx+1) + '. ' + (item.qty||1) + 'x ' + item.burger + '* — $' + ((item.price||0)*(item.qty||1)).toLocaleString('es-CO') + ' COP\n';
+      var addonsTotal = (item.addons||[]).reduce(function(a,x){return a+x.price;},0);
+      var subtotal = (item.price||0) + addonsTotal;
+      msg += '*' + (idx+1) + '. ' + item.burger + '* — $' + subtotal.toLocaleString('es-CO') + ' COP\n';
       if (item.removed.length) msg += '   🚫 Sin: ' + item.removed.join(', ') + '\n';
+      if (item.addons && item.addons.length) msg += '   ➕ Adicionales: ' + item.addons.map(function(a){return a.name;}).join(', ') + '\n';
     });
     
     if (selExtras.length) msg += '\n*Adicionales:* ' + selExtras.map(function(e){return e.name;}).join(', ') + '\n';
